@@ -1,0 +1,88 @@
+<?php
+/**
+ * @file
+ * 
+ */
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function disqus_inline_element_info_alter(&$type) {
+  if(isset($type['disqus'])) {
+    if(variable_get('disqus_inline_enable', true)) {
+      array_push($type['disqus']['#post_render'],'disqusinline_element_post_render');
+    }  
+  }
+}
+
+function disqusinline_element_post_render($children, &$element) {
+  $disqus = array(
+    'domain' => $element['#disqus']['domain'],
+    'url' => $element['#disqus']['url'],
+    'identifier' => $element['#disqus']['identifier'],
+  );
+  
+  $disqus['multiselector'] = variable_get('disqus_inline_multiselector', 'p');
+  $disqus['display_count'] = variable_get('disqus_inline_display_count', true);
+  $disqus['position'] = variable_get('disqus_inline_display_position', 'right');
+  $disqus['heighlight'] = variable_get('disqus_inline_heighlight', false); 
+  
+  drupal_add_js(drupal_get_path('module', 'disqus_inline') . '/js/inlineDisqussions.js');
+  drupal_add_css(drupal_get_path('module', 'disqus_inline') . '/js/inlineDisqussions.css');
+  
+  $element['#attached']['js'] = array(
+    drupal_get_path('module', 'disqus_inline') . '/js/disqus_inline.js' => array(),
+    array(
+      'type' => 'setting',
+      'data' => array(
+        'disqus_inline' => $disqus,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function disqus_inline_form_disqus_admin_settings_alter(&$form, &$form_state, $form_id) {
+  
+  $form['inlineselectors'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Inline selector'),
+    '#group' => 'settings',
+  );
+  
+  $form['inlineselectors']['disqus_inline_enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Disqus inline commenting'),
+    '#default_value' => variable_get('disqus_inline_enable', true),
+  ); 
+  
+  $form['inlineselectors']['disqus_inline_multiselector'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Insert Selector'),
+    '#description' => t('Insert selectors in order to control beside which sections the comment bubbles should be displayed. You can insert selectors like that: <i>selector1, selector2, selectorN</i>. Example: <i>h1, .single-post p, span, blockquote</i>'),
+    '#default_value' => variable_get('disqus_inline_multiselector', 'p'),
+  );
+  
+  $form['inlineselectors']['disqus_inline_display_count'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display Count'),
+    '#default_value' => variable_get('disqus_inline_display_count', true),
+  ); 
+  
+  $form['inlineselectors']['disqus_inline_heighlight'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Heighlighted text on comment'),
+    '#default_value' => variable_get('disqus_inline_heighlight', false),
+  );
+
+  $form['inlineselectors']['disqus_inline_position'] = array(
+    '#type' => 'radios',
+    '#title' => t('Position of comment box'),
+    '#default_value' => variable_get('disqus_inline_position', 'right'),
+    '#options' => array('right' => 'Right', 'left' => 'Left'),
+  );
+
+}
+

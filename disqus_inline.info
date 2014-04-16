@@ -1,0 +1,6 @@
+name = Disqus inline Comment
+Description = Activate disqus inline comments for fields
+core = 7.x
+version = 7.x-1.0-beta1
+dependencies[] = disqus
+configure = admin/config/services/disqus
