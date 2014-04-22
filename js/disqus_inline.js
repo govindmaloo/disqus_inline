@@ -18,6 +18,7 @@ var disqus_position = '';
  */
 Drupal.behaviors.disqusinline = {
   attach: function (context, settings) {
+	  $('body').once('disqus_inline', function() {
       // Load the Disqus comments.
       if (settings.disqus_inline || false) {
         // Setup the global JavaScript variables for Disqus.
@@ -30,16 +31,32 @@ Drupal.behaviors.disqusinline = {
         disqus_position = settings.disqus_inline.position;
         disqus_heighlight = settings.disqus_inline.heighlight;
         
-        if(disqus_selector) {
+        if(disqus_selector) {   	
         	$(disqus_selector).inlineDisqussions({
         		identifier: disqus_identifier,
         		displayCount: disqus_count,
         		highlighted: disqus_heighlight,
         		position: disqus_position,
         	});
-        	
-        }
-      }
+          }
+        
+        $('a.disqussion-link').click(function(event){
+        	var target = $(event.target);
+        	if(!target.parent('#disqussions_wrapper').length){
+        		$('#disqus_thread').appendTo('#disqussions_wrapper');
+        	}
+        });
+        
+        $('a.main-disqussion-link').click(function(event){
+        	var target = $(event.target);
+        	if($('#disqus_thread').parent('#disqussions_wrapper').length){
+        		target.parent().append($('#disqus_thread'));
+        	}
+        });
+        
+        
+      	}
+	  });
   }
 };
 

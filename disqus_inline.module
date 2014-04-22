@@ -16,6 +16,7 @@ function disqus_inline_element_info_alter(&$type) {
 }
 
 function disqusinline_element_post_render($children, &$element) {
+  
   $disqus = array(
     'domain' => $element['#disqus']['domain'],
     'url' => $element['#disqus']['url'],
@@ -24,21 +25,15 @@ function disqusinline_element_post_render($children, &$element) {
   
   $disqus['multiselector'] = variable_get('disqus_inline_multiselector', 'p');
   $disqus['display_count'] = variable_get('disqus_inline_display_count', true);
-  $disqus['position'] = variable_get('disqus_inline_display_position', 'right');
+  $disqus['position'] = variable_get('disqus_inline_position', 'right');
   $disqus['heighlight'] = variable_get('disqus_inline_heighlight', false); 
   
-  drupal_add_js(drupal_get_path('module', 'disqus_inline') . '/js/inlineDisqussions.js');
+  drupal_add_js(drupal_get_path('module', 'disqus_inline') . '/js/inlineDisqussions.js', array('scope' => 'footer'));
   drupal_add_css(drupal_get_path('module', 'disqus_inline') . '/js/inlineDisqussions.css');
   
-  $element['#attached']['js'] = array(
-    drupal_get_path('module', 'disqus_inline') . '/js/disqus_inline.js' => array(),
-    array(
-      'type' => 'setting',
-      'data' => array(
-        'disqus_inline' => $disqus,
-      ),
-    ),
-  );
+  $element['#attached']['js'][drupal_get_path('module', 'disqus_inline') . '/js/disqus_inline.js' ] = array();
+  $element['#attached']['js'][0]['data']['disqus_inline'] = $disqus; 
+  
 }
 
 /**
@@ -86,3 +81,11 @@ function disqus_inline_form_disqus_admin_settings_alter(&$form, &$form_state, $f
 
 }
 
+/**
+ * Implements hook_block_view_alter().
+ */
+function disqus_inline_block_view_alter(&$data, $block) {
+  if($block->delta == 'disqus_comments') {
+    $data['content'] = '<div id="disqus_thread">'. print render($data['content']).'</div>';
+  }
+}
